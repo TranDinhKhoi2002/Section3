@@ -1,21 +1,17 @@
-const db = require("../util/database");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../util/database");
 
-module.exports = class OrderItem {
-  constructor(orderId, productId, quantity) {
-    this.orderId = orderId;
-    this.productId = productId;
-    this.quantity = quantity;
-  }
+const OrderItem = sequelize.define("orderItem", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
 
-  async save() {
-    await db.execute(
-      "INSERT INTO order_items (orderId, productId, quantity) VALUES (?, ?, ?)",
-      [this.orderId, this.productId, this.quantity]
-    );
-  }
-
-  static async fetchOrders() {
-    const [orders] = await db.execute("SELECT * FROM order_items");
-    return orders;
-  }
-};
+module.exports = OrderItem;

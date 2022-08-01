@@ -1,19 +1,21 @@
-const db = require("../util/database");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../util/database");
 
-module.exports = class User {
-  constructor(name, email) {
-    this.name = name;
-    this.email = email;
-  }
+const User = sequelize.define("user", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+});
 
-  static async createUser() {
-    const [users] = await db.execute("SELECT * FROM users WHERE id = ?", [1]);
-
-    if (users.length === 0) {
-      await db.execute("INSERT INTO users (name, email) VALUES (?, ?)", [
-        "trandinhkhoi",
-        "khoi@gmail.com",
-      ]);
-    }
-  }
-};
+module.exports = User;

@@ -1,15 +1,13 @@
-const db = require("../util/database");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../util/database");
 
-module.exports = class Cart {
-  constructor(userId) {
-    this.userId = userId;
-  }
+const Cart = sequelize.define("cart", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
+});
 
-  static async createCart(userId) {
-    const [cart] = await db.execute("SELECT * FROM carts WHERE id = ?", [1]);
-    console.log(cart);
-    if (cart.length === 0) {
-      await db.execute("INSERT INTO carts (userId) VALUES (?)", [userId]);
-    }
-  }
-};
+module.exports = Cart;

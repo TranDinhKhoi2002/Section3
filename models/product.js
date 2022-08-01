@@ -1,38 +1,29 @@
-const db = require("../util/database");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../util/database");
 
-module.exports = class Product {
-  constructor(title, price, description, imageUrl) {
-    this.title = title;
-    this.price = price;
-    this.description = description;
-    this.imageUrl = imageUrl;
-  }
+const Product = sequelize.define("product", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  price: {
+    type: DataTypes.DOUBLE,
+    allowNull: false,
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+});
 
-  async save() {
-    await db.execute(
-      "INSERT INTO products (title, price, imageUrl, description) VALUES (?, ?, ?, ?)",
-      [this.title, this.price, this.imageUrl, this.description]
-    );
-  }
-
-  static async deleteById(productId) {
-    await db.execute("DELETE FROM products WHERE id = ?", [productId]);
-  }
-
-  static async fetchAll() {
-    return await db.execute("SELECT * FROM products");
-  }
-
-  static async findById(productId) {
-    return await db.execute("SELECT * FROM products WHERE products.id = ?", [
-      productId,
-    ]);
-  }
-
-  static async updateProduct(productId, title, price, imageUrl, description) {
-    await db.execute(
-      "UPDATE products SET title = ?, price = ?, imageUrl = ?, description = ? WHERE id = ?",
-      [title, price, imageUrl, description, productId]
-    );
-  }
-};
+module.exports = Product;
