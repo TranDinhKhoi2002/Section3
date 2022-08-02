@@ -1,11 +1,8 @@
-const CartItem = require("../models/cartItems");
-const Order = require("../models/order");
-const OrderItem = require("../models/orderItems");
 const Product = require("../models/product");
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.findAll();
+    const products = await Product.fetchAll();
     res.render("shop/product-list", {
       prods: products,
       pageTitle: "All Products",
@@ -18,7 +15,7 @@ exports.getProducts = async (req, res, next) => {
 
 exports.getProductDetails = async (req, res, next) => {
   const productId = req.params.productId;
-  const product = await Product.findByPk(productId);
+  const product = await Product.findById(productId);
 
   res.render("shop/product-detail", {
     pageTitle: product.title,
@@ -29,7 +26,7 @@ exports.getProductDetails = async (req, res, next) => {
 
 exports.getIndex = async (req, res, next) => {
   try {
-    const products = await Product.findAll();
+    const products = await Product.fetchAll();
     res.render("shop/index", {
       prods: products,
       pageTitle: "Shop",
@@ -42,8 +39,7 @@ exports.getIndex = async (req, res, next) => {
 
 exports.getCart = async (req, res, next) => {
   try {
-    const cart = await req.user.getCart();
-    const products = await cart.getProducts();
+    const products = await req.user.getCart();
 
     res.render("shop/cart", {
       path: "/cart",
@@ -58,24 +54,8 @@ exports.getCart = async (req, res, next) => {
 exports.postCart = async (req, res, next) => {
   try {
     const productId = req.body.productId;
-
-    const cart = await req.user.getCart();
-    const products = await cart.getProducts({ where: { id: productId } });
-
-    let product;
-    let newQuantity = 1;
-
-    if (products.length > 0) {
-      product = products[0];
-    }
-
-    if (product) {
-      newQuantity = product.cartItem.quantity + 1;
-    } else {
-      product = await Product.findByPk(productId);
-    }
-
-    await cart.addProduct(product, { through: { quantity: newQuantity } });
+    const product = await Product.findById(productId);
+    await req.user.addToCart(product);
 
     res.redirect("/cart");
   } catch (err) {
@@ -86,12 +66,7 @@ exports.postCart = async (req, res, next) => {
 exports.postDeleteCartItem = async (req, res, next) => {
   try {
     const productId = req.body.productId;
-
-    const cart = await req.user.getCart();
-    const products = await cart.getProducts({ where: { id: productId } });
-
-    const product = products[0];
-    await product.cartItem.destroy();
+    await req.user.deleteFromCart(productId);
     res.redirect("/cart");
   } catch (err) {
     console.log(err);
@@ -100,7 +75,7 @@ exports.postDeleteCartItem = async (req, res, next) => {
 
 exports.getOrders = async (req, res, next) => {
   try {
-    const orders = await req.user.getOrders({ include: ["products"] });
+    const orders = await req.user.getOrders();
     res.render("shop/orders", {
       pageTitle: "Your Orders",
       path: "/orders",
@@ -113,18 +88,7 @@ exports.getOrders = async (req, res, next) => {
 
 exports.postOrder = async (req, res, next) => {
   try {
-    const cart = await req.user.getCart();
-    const products = await cart.getProducts();
-
-    const order = await req.user.createOrder();
-    await order.addProducts(
-      products.map((product) => {
-        product.orderItem = { quantity: product.cartItem.quantity };
-        return product;
-      })
-    );
-
-    await cart.setProducts(null);
+    await req.user.addOrder();
     res.redirect("/orders");
   } catch (err) {
     console.log(err);
