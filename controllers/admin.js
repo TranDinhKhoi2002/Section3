@@ -11,8 +11,16 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = async (req, res, next) => {
   try {
     const { title, imageUrl, price, description } = req.body;
+    const product = new Product(
+      title,
+      price,
+      description,
+      imageUrl,
+      null,
+      req.user._id
+    );
+    await product.save();
 
-    await req.user.createProduct({ title, price, imageUrl, description });
     res.redirect("/admin/products");
   } catch (err) {
     console.log(err);
@@ -27,7 +35,7 @@ exports.getEditProduct = async (req, res, next) => {
 
   const productId = req.params.productId;
   try {
-    const product = await Product.findByPk(productId);
+    const product = await Product.findById(productId);
     res.render("admin/edit-product", {
       pageTitle: "Edit Product",
       path: `/admin/edit-product`,
@@ -49,15 +57,15 @@ exports.postEditProduct = async (req, res, next) => {
   } = req.body;
 
   try {
-    await Product.update(
-      {
-        title: updatedTitle,
-        price: updatedPrice,
-        description: updatedDescription,
-        imageUrl: updatedUrl,
-      },
-      { where: { id: productId } }
+    const product = new Product(
+      updatedTitle,
+      updatedPrice,
+      updatedDescription,
+      updatedUrl,
+      productId,
+      req.user._id
     );
+    await product.save();
     res.redirect("/admin/products");
   } catch (err) {
     console.log(err);
@@ -69,7 +77,7 @@ exports.postDeleteProduct = async (req, res, next) => {
 
   try {
     // findByIdAndRemove returns the document while findByIdAndDelete doesn't.
-    await Product.destroy({ where: { id: productId } });
+    await Product.deleteById(productId);
     res.redirect("/admin/products");
   } catch (err) {
     console.log(err);
@@ -78,7 +86,7 @@ exports.postDeleteProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.findAll();
+    const products = await Product.fetchAll();
     res.render("admin/products", {
       prods: products,
       pageTitle: "Admin Products",
