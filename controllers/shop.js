@@ -1,8 +1,9 @@
 const Product = require("../models/product");
+const Order = require("../models/order");
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.fetchAll();
+    const products = await Product.find();
     res.render("shop/product-list", {
       prods: products,
       pageTitle: "All Products",
@@ -16,7 +17,6 @@ exports.getProducts = async (req, res, next) => {
 exports.getProductDetails = async (req, res, next) => {
   const productId = req.params.productId;
   const product = await Product.findById(productId);
-  console.log(product);
 
   res.render("shop/product-detail", {
     pageTitle: product.title,
@@ -27,7 +27,7 @@ exports.getProductDetails = async (req, res, next) => {
 
 exports.getIndex = async (req, res, next) => {
   try {
-    const products = await Product.fetchAll();
+    const products = await Product.find();
     res.render("shop/index", {
       prods: products,
       pageTitle: "Shop",
@@ -40,7 +40,8 @@ exports.getIndex = async (req, res, next) => {
 
 exports.getCart = async (req, res, next) => {
   try {
-    const products = await req.user.getCart();
+    const user = await req.user.populate("cart.items.productId");
+    const products = user.cart.items;
 
     res.render("shop/cart", {
       path: "/cart",
@@ -55,7 +56,6 @@ exports.getCart = async (req, res, next) => {
 exports.postCart = async (req, res, next) => {
   try {
     const productId = req.body.productId;
-    console.log(productId);
     const product = await Product.findById(productId);
     await req.user.addToCart(product);
 
@@ -77,8 +77,7 @@ exports.postDeleteCartItem = async (req, res, next) => {
 
 exports.getOrders = async (req, res, next) => {
   try {
-    const orders = await req.user.getOrders({ include: ["products"] });
-    console.log(orders);
+    const orders = await Order.find({ "user._id": req.user._id });
     res.render("shop/orders", {
       pageTitle: "Your Orders",
       path: "/orders",
@@ -91,7 +90,21 @@ exports.getOrders = async (req, res, next) => {
 
 exports.postOrder = async (req, res, next) => {
   try {
-    await req.user.addOrder();
+    const user = await req.user.populate("cart.items.productId");
+    const products = user.cart.items.map((item) => {
+      return { quantity: item.quantity, product: { ...item.productId._doc } };
+    });
+
+    const order = new Order({
+      products,
+      user: {
+        name: req.user.name,
+        userId: req.user,
+      },
+    });
+    await order.save();
+    await req.user.clearCart();
+
     res.redirect("/orders");
   } catch (err) {
     console.log(err);

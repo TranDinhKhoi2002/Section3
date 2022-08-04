@@ -7,7 +7,7 @@ const app = express();
 
 const errorController = require("./controllers/404");
 
-const { connectToMongo } = require("./util/database");
+const mongoose = require("mongoose");
 const User = require("./models/user");
 
 app.set("view engine", "ejs");
@@ -21,7 +21,7 @@ const shopRoutes = require("./routes/shop");
 
 app.use(async (req, res, next) => {
   const user = await User.findById("62e8ba7ab85fad525b26a300");
-  req.user = new User(user.name, user.email, user.cart, user._id);
+  req.user = user;
   next();
 });
 
@@ -30,6 +30,23 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-connectToMongo(() => {
-  app.listen(3000);
-});
+mongoose
+  .connect(
+    "mongodb+srv://nodejscourse:tLUZcLfbE01uJY1M@cluster0.9srxm.mongodb.net/bookshop_review?retryWrites=true&w=majority"
+  )
+  .then((result) => {
+    User.findOne().then((user) => {
+      if (!user) {
+        const user = new User({
+          name: "khoi",
+          email: "khoi@khoi123.com",
+          cart: {
+            items: [],
+          },
+        });
+        user.save();
+      }
+    });
+    app.listen(3000);
+  })
+  .catch((err) => console.log(err));

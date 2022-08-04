@@ -11,14 +11,13 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = async (req, res, next) => {
   try {
     const { title, imageUrl, price, description } = req.body;
-    const product = new Product(
+    const product = new Product({
       title,
       price,
       description,
       imageUrl,
-      null,
-      req.user._id
-    );
+      userId: req.user._id,
+    });
     await product.save();
 
     res.redirect("/admin/products");
@@ -57,14 +56,12 @@ exports.postEditProduct = async (req, res, next) => {
   } = req.body;
 
   try {
-    const product = new Product(
-      updatedTitle,
-      updatedPrice,
-      updatedDescription,
-      updatedUrl,
-      productId,
-      req.user._id
-    );
+    const product = await Product.findById(productId);
+    product.title = updatedTitle;
+    product.price = updatedPrice;
+    product.description = updatedDescription;
+    product.imageUrl = updatedUrl;
+
     await product.save();
     res.redirect("/admin/products");
   } catch (err) {
@@ -77,7 +74,7 @@ exports.postDeleteProduct = async (req, res, next) => {
 
   try {
     // findByIdAndRemove returns the document while findByIdAndDelete doesn't.
-    await Product.deleteById(productId);
+    await Product.deleteOne({ _id: productId });
     res.redirect("/admin/products");
   } catch (err) {
     console.log(err);
@@ -86,7 +83,7 @@ exports.postDeleteProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.fetchAll();
+    const products = await Product.find();
     res.render("admin/products", {
       prods: products,
       pageTitle: "Admin Products",
