@@ -2,19 +2,27 @@ const express = require("express");
 const router = express.Router();
 
 const adminController = require("../controllers/admin");
+const protectRoutes = require("../middleware/protect-routes");
 
 // Routes start with /admin
+router.get("/add-product", protectRoutes, adminController.getAddProduct);
 
-router.get("/add-product", adminController.getAddProduct);
+router.get("/products", protectRoutes, adminController.getProducts);
 
-router.get("/products", adminController.getProducts);
+router.post("/add-product", protectRoutes, adminController.postAddProduct);
 
-router.post("/add-product", adminController.postAddProduct);
+router.get(
+  "/edit-product/:productId",
+  protectRoutes,
+  adminController.getEditProduct
+);
 
-router.get("/edit-product/:productId", adminController.getEditProduct);
+router.post("/edit-product", protectRoutes, adminController.postEditProduct);
 
-router.post("/edit-product", adminController.postEditProduct);
-
-router.post("/delete-product", adminController.postDeleteProduct);
+router.post(
+  "/delete-product",
+  protectRoutes,
+  adminController.postDeleteProduct
+);
 
 module.exports = router;
