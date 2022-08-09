@@ -57,6 +57,10 @@ exports.postEditProduct = async (req, res, next) => {
 
   try {
     const product = await Product.findById(productId);
+    if (product.userId.toString() !== req.user._id.toString()) {
+      return res.redirect("/");
+    }
+
     product.title = updatedTitle;
     product.price = updatedPrice;
     product.description = updatedDescription;
@@ -74,7 +78,7 @@ exports.postDeleteProduct = async (req, res, next) => {
 
   try {
     // findByIdAndRemove returns the document while findByIdAndDelete doesn't.
-    await Product.deleteOne({ _id: productId });
+    await Product.deleteOne({ _id: productId, userId: req.user._id });
     res.redirect("/admin/products");
   } catch (err) {
     console.log(err);
@@ -83,7 +87,7 @@ exports.postDeleteProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find({ userId: req.user._id });
     res.render("admin/products", {
       prods: products,
       pageTitle: "Admin Products",

@@ -3,10 +3,13 @@ const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 
+const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
 const flash = require("connect-flash");
+
+const User = require("./models/user");
 
 const MONGODB_URI =
   "mongodb+srv://nodejscourse:tLUZcLfbE01uJY1M@cluster0.9srxm.mongodb.net/bookshop_review?retryWrites=true&w=majority";
@@ -18,16 +21,9 @@ const store = new MongoDBStore({
 });
 const csrfProtection = csrf();
 
-const errorController = require("./controllers/404");
-
-const mongoose = require("mongoose");
-const User = require("./models/user");
-
-app.set("view engine", "ejs");
-app.set("views", "views");
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+
 app.use(
   session({
     secret: "my secret",
@@ -39,10 +35,13 @@ app.use(
 app.use(csrfProtection);
 app.use(flash());
 
+app.set("view engine", "ejs");
+app.set("views", "views");
+
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
-const csurf = require("csurf");
+const errorController = require("./controllers/404");
 
 app.use(async (req, res, next) => {
   if (!req.session.user) {
