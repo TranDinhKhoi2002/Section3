@@ -6,6 +6,8 @@ sendgrid.setApiKey(
   "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"
 );
 
+const { validationResult } = require("express-validator");
+
 const User = require("../models/user");
 
 exports.getLogin = (req, res, next) => {
@@ -25,22 +27,33 @@ exports.getLogin = (req, res, next) => {
 exports.postLogin = async (req, res, next) => {
   const { email, password } = req.body;
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.render("auth/login", {
+        path: "/login",
+        pageTitle: "Login",
+        errorMessage: errors.array()[0].msg,
+      });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
-      req.flash("error", "No email found.");
+      req.flash("error", "No email found");
       return res.redirect("/login");
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = bcrypt.compareSync(password, user.password);
     if (!isValidPassword) {
-      req.flash("error", "Incorrect password.");
+      req.flash("error", "Incorrect password");
       return res.redirect("/login");
     }
 
     req.session.user = user;
     req.session.isLoggedIn = true;
     req.session.save((err) => {
-      console.log(err);
+      if (err) {
+        console.log(err);
+      }
       return res.redirect("/");
     });
   } catch (err) {
@@ -50,7 +63,9 @@ exports.postLogin = async (req, res, next) => {
 
 exports.postLogout = async (req, res, next) => {
   req.session.destroy((err) => {
-    console.log(err);
+    if (err) {
+      console.log(err);
+    }
     res.redirect("/");
   });
 };
@@ -70,20 +85,19 @@ exports.getSignup = (req, res, next) => {
 };
 
 exports.postSignup = async (req, res, next) => {
-  const { email, password, confirmPassword } = req.body;
+  const { email, password } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(422).render("auth/signup", {
+      path: "/signup",
+      pageTitle: "Signup",
+      errorMessage: errors.array()[0].msg,
+    });
+  }
 
   try {
-    const userDoc = await User.findOne({ email });
-    if (userDoc) {
-      req.flash("error", "Email exists already, please pick another one");
-      return res.redirect("/signup");
-    }
-
-    if (password !== confirmPassword) {
-      req.flash("error", "Your confirm password is incorrect");
-      return res.redirect("/signup");
-    }
-
     const hashedPassword = await bcrypt.hash(password, 12);
     const user = new User({
       email,
@@ -130,7 +144,7 @@ exports.getResetPassword = (req, res, next) => {
 exports.postResetPassword = (req, res, next) => {
   crypto.randomBytes(32, async (err, buffer) => {
     if (err) {
-      console.log(err);
+      req.flash("error", "Something went wrong, please try again!");
       return res.redirect("/reset-password");
     }
 
@@ -138,7 +152,7 @@ exports.postResetPassword = (req, res, next) => {
     try {
       const user = await User.findOne({ email: req.body.email });
       if (!user) {
-        req.flash("error", "No account found with that email");
+        req.flash("error", "No accounts found with that email");
         return res.redirect("/reset-password");
       }
 
@@ -149,7 +163,7 @@ exports.postResetPassword = (req, res, next) => {
       sendgrid.send({
         to: req.body.email,
         from: "trandinhkhoi102@gmail.com",
-        subject: "Reset password",
+        subject: "Reset Password",
         html: `
           <p>You requested a password reset</p>
           <p>Click this <a href='http://localhost:3000/reset-password/${token}'>link</a> to set a new password</p>
