@@ -21,6 +21,11 @@ exports.getLogin = (req, res, next) => {
     path: "/login",
     pageTitle: "Login",
     errorMessage: message,
+    oldInput: {
+      email: "",
+      password: "",
+    },
+    validationErrors: [],
   });
 };
 
@@ -29,23 +34,35 @@ exports.postLogin = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.render("auth/login", {
+      return res.status(422).render("auth/login", {
         path: "/login",
         pageTitle: "Login",
         errorMessage: errors.array()[0].msg,
+        oldInput: { email, password },
+        validationErrors: errors.array(),
       });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      req.flash("error", "No email found");
-      return res.redirect("/login");
+      return res.status(422).render("auth/login", {
+        path: "/login",
+        pageTitle: "Login",
+        errorMessage: "No email found",
+        oldInput: { email, password },
+        validationErrors: [{ param: "email" }],
+      });
     }
 
     const isValidPassword = bcrypt.compareSync(password, user.password);
     if (!isValidPassword) {
-      req.flash("error", "Incorrect password");
-      return res.redirect("/login");
+      return res.status(422).render("auth/login", {
+        path: "/login",
+        pageTitle: "Login",
+        errorMessage: "Incorrect password",
+        oldInput: { email, password },
+        validationErrors: [{ param: "password" }],
+      });
     }
 
     req.session.user = user;
@@ -57,7 +74,9 @@ exports.postLogin = async (req, res, next) => {
       return res.redirect("/");
     });
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong, please try again!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -81,11 +100,17 @@ exports.getSignup = (req, res, next) => {
     path: "/signup",
     pageTitle: "Signup",
     errorMessage: message,
+    oldInput: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    validationErrors: [],
   });
 };
 
 exports.postSignup = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, confirmPassword } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -94,6 +119,8 @@ exports.postSignup = async (req, res, next) => {
       path: "/signup",
       pageTitle: "Signup",
       errorMessage: errors.array()[0].msg,
+      oldInput: { email, password, confirmPassword },
+      validationErrors: errors.array(),
     });
   }
 
@@ -123,7 +150,9 @@ exports.postSignup = async (req, res, next) => {
     );
     res.redirect("/login");
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong, please try again!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -171,7 +200,9 @@ exports.postResetPassword = (req, res, next) => {
       });
       res.redirect("/");
     } catch (err) {
-      console.log(err);
+      const error = new Error("Something went wrong, please try again!");
+      error.httpStatusCode = 500;
+      return next(error);
     }
   });
 };
@@ -201,7 +232,9 @@ exports.getNewPassword = async (req, res, next) => {
       passwordToken: token,
     });
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong, please try again!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -222,6 +255,8 @@ exports.postNewPassword = async (req, res, next) => {
     await user.save();
     res.redirect("/login");
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong, please try again!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };

@@ -3,7 +3,8 @@ const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 
-const MONGODB_URI = "***";
+const MONGODB_URI =
+  "mongodb+srv://nodejscourse:tLUZcLfbE01uJY1M@cluster0.9srxm.mongodb.net/bookshop_review?retryWrites=true&w=majority";
 const User = require("./models/user");
 
 const mongoose = require("mongoose");
@@ -36,6 +37,12 @@ app.use(
 app.use(csrfProtection);
 app.use(flash());
 
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
 app.use(async (req, res, next) => {
   if (!req.session.user) {
     return next();
@@ -43,29 +50,37 @@ app.use(async (req, res, next) => {
 
   try {
     const user = await User.findById(req.session.user._id);
+    if (!user) {
+      return next();
+    }
     req.user = user;
     next();
   } catch (err) {
-    console.log(err);
+    next(new Error(err.message));
   }
-});
-
-app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
-  next();
 });
 
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
-const errorController = require("./controllers/404");
+const errorController = require("./controllers/error");
 
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.use("/500", errorController.get500);
+
 app.use(errorController.get404);
+
+app.use((error, req, res, next) => {
+  res.status(500).render("500", {
+    pageTitle: "Error!",
+    path: "/500",
+    isAuthenticated: req.session.isLoggedIn,
+    message: error.message,
+  });
+});
 
 mongoose
   .connect(MONGODB_URI)

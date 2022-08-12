@@ -10,7 +10,13 @@ router.get("/login", authController.getLogin);
 
 router.post(
   "/login",
-  [body("email").isEmail().withMessage("Invalid email.")],
+  [
+    body("email").isEmail().withMessage("Invalid email.").normalizeEmail(),
+    body("password", "Password has to be valid")
+      .isLength({ min: 5 })
+      .isAlphanumeric()
+      .trim(),
+  ],
   authController.postLogin
 );
 
@@ -32,13 +38,15 @@ router.post(
             );
           }
         });
-      }),
+      })
+      .normalizeEmail(),
     body(
       "password",
       "Please enter a password with numbers and text and at least 5 characters."
     )
       .isLength({ min: 5 })
-      .isAlphanumeric(),
+      .isAlphanumeric()
+      .trim(),
     body("confirmPassword").custom((value, { req }) => {
       if (value !== req.body.password) {
         throw new Error("Your confirm password is incorrect.");
