@@ -23,6 +23,8 @@ router.post(
 
 router.get("/orders", protectRoutes, shopController.getOrders);
 
+router.get("/orders/:orderId", protectRoutes, shopController.getInvoice);
+
 router.post("/create-order", protectRoutes, shopController.postOrder);
 
 module.exports = router;

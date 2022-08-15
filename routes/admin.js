@@ -18,7 +18,6 @@ router.post(
       .isString()
       .isLength({ min: 1 })
       .trim(),
-    body("imageUrl", "Invalid URL").isURL(),
     body("price", "Price has to be numbers").isFloat(),
     body("description", "Description has not to be blank")
       .isLength({ min: 1 })
@@ -41,7 +40,6 @@ router.post(
       .isString()
       .isLength({ min: 1 })
       .trim(),
-    body("imageUrl", "Invalid URL").isURL(),
     body("price", "Price has to be numbers").isFloat(),
     body("description", "Description has not to be blank")
       .isLength({ min: 1 })
