@@ -143,8 +143,9 @@ exports.postEditProduct = async (req, res, next) => {
   }
 };
 
-exports.postDeleteProduct = async (req, res, next) => {
-  const productId = req.body.productId;
+exports.deleteProduct = async (req, res, next) => {
+  const productId = req.params.productId;
+  const page = +req.query.page || 1;
 
   try {
     // findByIdAndRemove returns the document while findByIdAndDelete doesn't.
@@ -160,12 +161,9 @@ exports.postDeleteProduct = async (req, res, next) => {
       user.removeFromCart(productId);
     });
 
-    res.redirect("/admin/products");
+    res.status(200).json({ message: "Success" });
   } catch (err) {
-    console.log(err);
-    const error = new Error("Deleting a product failed, please try again!");
-    error.httpStatusCode = 500;
-    return next(error);
+    res.status(500).json({ message: "Deleting product failed" });
   }
 };
 
@@ -175,7 +173,9 @@ exports.getProducts = async (req, res, next) => {
     const products = await Product.find({ userId: req.user._id })
       .skip((page - 1) * ITEMS_PER_PAGE)
       .limit(ITEMS_PER_PAGE);
-    const totalItems = await Product.find().countDocuments();
+    const totalItems = await Product.find({
+      userId: req.user._id,
+    }).countDocuments();
 
     res.render("admin/products", {
       prods: products,

@@ -5,9 +5,9 @@
     <body>
         <%- include('../includes/navigation.ejs') %>
 
-            <main>
+            <main id="products">
                 <% if (prods.length > 0) { %>
-                    <div class="grid">
+                    <div id="product" class="grid">
                         <% for (let product of prods) { %>
                             <article class="card product-item">
                                 <header class="card__header">
@@ -28,12 +28,9 @@
                                 </div>
                                 <div class="card__actions">
                                     <a href="/admin/edit-product/<%= product._id %>?edit=true" class="btn">Edit</a>
-                                    <form action="/admin/delete-product" method="POST">
-                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                                        <button class="btn" type="submit">Delete</button>
-                                        <input type="hidden" name="productId" value="<%= product._id %>">
-                                    </form>
-
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                    <button class="btn" type="button" onclick="deleteProduct(this)">Delete</button>
+                                    <input type="hidden" name="productId" value="<%= product._id %>">
                                 </div>
                             </article>
                             <% } %>
@@ -41,6 +38,7 @@
                     <%- include('../includes/pagination.ejs', {currentPage, hasNextPage, hasPreviousPage, nextPage, previousPage, lastPage}) %> 
                     <% } else { %>
                         <h1>No Products Found!</h1>
-                        <% } %>
+                    <% } %>
             </main>
             <%- include('../includes/end.ejs') %>
+            <script src="/js/admin.js"></script>

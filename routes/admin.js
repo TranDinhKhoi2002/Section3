@@ -48,10 +48,10 @@ router.post(
   adminController.postEditProduct
 );
 
-router.post(
-  "/delete-product",
+router.delete(
+  "/product/:productId",
   protectRoutes,
-  adminController.postDeleteProduct
+  adminController.deleteProduct
 );
 
 module.exports = router;
