@@ -2,6 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
 
+const stripe = require("stripe")(
+  "sk_test_51LXLXjJHSbimnUs13TYHRHzWhg8zplGJStLkmOE1Iuniw875YJFFOEI9zL0l7LRmEdb9vUaUeyCgH2zQabGlStY2000EVwjiJP"
+);
+
 const Product = require("../models/product");
 const Order = require("../models/order");
 
@@ -28,7 +32,9 @@ exports.getProducts = async (req, res, next) => {
       lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
     });
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -64,7 +70,9 @@ exports.getIndex = async (req, res, next) => {
       lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
     });
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -72,7 +80,6 @@ exports.getCart = async (req, res, next) => {
   try {
     const user = await req.user.populate("cart.items.productId");
     const products = user.cart.items;
-    console.log(products);
 
     res.render("shop/cart", {
       path: "/cart",
@@ -80,7 +87,53 @@ exports.getCart = async (req, res, next) => {
       products: products,
     });
   } catch (err) {
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+};
+
+exports.getCheckout = async (req, res, next) => {
+  try {
+    const user = await req.user.populate("cart.items.productId");
+    const products = user.cart.items;
+    const totalPrice = products.reduce((total, product) => {
+      return total + product.quantity * product.productId.price;
+    }, 0);
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: products.map((product) => {
+        return {
+          quantity: product.quantity,
+          price_data: {
+            currency: "usd",
+            unit_amount: product.productId.price * 100,
+            product_data: {
+              name: product.productId.title,
+              description: product.productId.description,
+            },
+          },
+        };
+      }),
+      customer_email: req.user.email,
+      success_url: req.protocol + "://" + req.get("host") + "/checkout/success",
+      cancel_url: req.protocol + "://" + req.get("host") + "/checkout/cancel",
+    });
+
+    res.render("shop/checkout", {
+      pageTitle: "Checkout",
+      path: "/checkout",
+      products: products,
+      totalPrice: totalPrice,
+      sessionId: session.id,
+    });
+  } catch (err) {
     console.log(err);
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -92,7 +145,9 @@ exports.postCart = async (req, res, next) => {
 
     res.redirect("/cart");
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -102,7 +157,9 @@ exports.postDeleteCartItem = async (req, res, next) => {
     await req.user.removeFromCart(productId);
     res.redirect("/cart");
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -115,7 +172,9 @@ exports.getOrders = async (req, res, next) => {
       orders: orders,
     });
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -138,7 +197,34 @@ exports.postOrder = async (req, res, next) => {
 
     res.redirect("/orders");
   } catch (err) {
-    console.log(err);
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
+  }
+};
+
+exports.getCheckoutSuccess = async (req, res, next) => {
+  try {
+    const user = await req.user.populate("cart.items.productId");
+    const products = user.cart.items.map((item) => {
+      return { quantity: item.quantity, product: { ...item.productId._doc } };
+    });
+
+    const order = new Order({
+      products,
+      user: {
+        email: req.user.email,
+        userId: req.user,
+      },
+    });
+    await order.save();
+    await req.user.clearCart();
+
+    res.redirect("/orders");
+  } catch (err) {
+    const error = new Error("Something went wrong!");
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 

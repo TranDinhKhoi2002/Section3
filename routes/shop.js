@@ -15,6 +15,12 @@ router.get("/cart", protectRoutes, shopController.getCart);
 
 router.post("/cart", protectRoutes, shopController.postCart);
 
+router.get("/checkout", protectRoutes, shopController.getCheckout);
+
+router.get("/checkout/success", shopController.getCheckoutSuccess);
+
+router.get("/checkout/cancel", shopController.getCheckout);
+
 router.post(
   "/cart-delete-item",
   protectRoutes,
