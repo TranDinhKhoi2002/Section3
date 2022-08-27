@@ -36,7 +36,7 @@ const accessLogStream = fs.createWriteStream(
   { flags: "a" }
 );
 
-app.use(helmet());
+// app.use(helmet());
 app.use(compression());
 app.use(morgan("tiny", { stream: accessLogStream }));
 

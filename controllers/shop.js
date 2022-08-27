@@ -41,6 +41,8 @@ exports.getProductDetails = async (req, res, next) => {
   const productId = req.params.productId;
   const product = await Product.findById(productId);
 
+  console.log(product.imageUrl.replace("\\", "/"));
+
   res.render("shop/product-detail", {
     pageTitle: product.title,
     path: "/products",
