@@ -1,9 +1,13 @@
 const path = require("path");
+const fs = require("fs");
 const express = require("express");
 
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
+const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -27,6 +31,15 @@ const fileFilter = (req, file, cb) => {
 
 const app = express();
 
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, "access.log"),
+  { flags: "a" }
+);
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan("tiny", { stream: accessLogStream }));
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
@@ -37,8 +50,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-const MONGODB_URI =
-  "mongodb+srv://nodejscourse:tLUZcLfbE01uJY1M@cluster0.9srxm.mongodb.net/bookshop_review?retryWrites=true&w=majority";
+const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.9srxm.mongodb.net/${process.env.MONGO_DEFAULT_DB}?retryWrites=true&w=majority`;
 const User = require("./models/user");
 
 const mongoose = require("mongoose");
@@ -111,6 +123,10 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(MONGODB_URI)
   .then((result) => {
-    app.listen(3000);
+    // https
+    //   .createServer({ key: privateKey, cert: certificate }, app)
+    //   .listen(process.env.PORT || 3000);
+
+    app.listen(process.env.PORT || 3000);
   })
   .catch((err) => console.log(err));

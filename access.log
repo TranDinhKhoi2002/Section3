@@ -1,0 +1,26 @@
+::1 - - [27/Aug/2022:02:16:26 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:16:26 +0000] "GET /css/main.css HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:16:26 +0000] "GET /css/product.css HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:16:26 +0000] "GET /js/main.js HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:16:26 +0000] "GET /images/ff3dc4b0-85f1-4296-83fc-f3091ef647b5-book.jpg HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:17:23 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:17:23 +0000] "GET /css/main.css HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:17:23 +0000] "GET /css/product.css HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:17:23 +0000] "GET /js/main.js HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+::1 - - [27/Aug/2022:02:17:23 +0000] "GET /images/ff3dc4b0-85f1-4296-83fc-f3091ef647b5-book.jpg HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+GET / 200 - - 286.829 ms
+GET /css/main.css 304 - - 2.663 ms
+GET /css/product.css 304 - - 2.906 ms
+GET /js/main.js 304 - - 0.878 ms
+GET /images/ff3dc4b0-85f1-4296-83fc-f3091ef647b5-book.jpg 304 - - 1.580 ms
+GET / 200 - - 337.747 ms
+GET /css/main.css 200 - - 10.566 ms
+GET /css/product.css 200 381 - 1.736 ms
+GET /js/main.js 200 535 - 5.186 ms
+GET /images/ff3dc4b0-85f1-4296-83fc-f3091ef647b5-book.jpg 200 113090 - 7.887 ms
+GET /favicon.ico 404 - - 143.337 ms
+GET /products 200 - - 295.212 ms
+GET /css/main.css 304 - - 2.849 ms
+GET /css/product.css 304 - - 2.597 ms
+GET /images/ff3dc4b0-85f1-4296-83fc-f3091ef647b5-book.jpg 304 - - 3.280 ms
+GET /js/main.js 304 - - 1.448 ms
