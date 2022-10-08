@@ -20,6 +20,7 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = async (req, res, next) => {
   const { title, price, description } = req.body;
   const image = req.file;
+  console.log(image);
   if (!image) {
     return res.status(422).render("admin/edit-product", {
       pageTitle: "Add Product",
@@ -47,6 +48,7 @@ exports.postAddProduct = async (req, res, next) => {
     }
 
     const imageUrl = image.path;
+    console.log(imageUrl);
     const product = new Product({
       title,
       price,
@@ -58,7 +60,9 @@ exports.postAddProduct = async (req, res, next) => {
 
     res.redirect("/admin/products");
   } catch (err) {
-    const error = new Error("Creating a product failed, please try again!");
+    const error = new Error(
+      err.message || "Creating a product failed, please try again!"
+    );
     error.httpStatusCode = 500;
     return next(error);
   }

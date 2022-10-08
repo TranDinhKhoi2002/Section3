@@ -5,7 +5,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
-const helmet = require("helmet");
+// const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
 

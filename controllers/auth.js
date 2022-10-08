@@ -2,9 +2,6 @@ const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 
 const sendgrid = require("@sendgrid/mail");
-sendgrid.setApiKey(
-  "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"
-);
 
 const { validationResult } = require("express-validator");
 
@@ -114,7 +111,6 @@ exports.postSignup = async (req, res, next) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors.array());
     return res.status(422).render("auth/signup", {
       path: "/signup",
       pageTitle: "Signup",
